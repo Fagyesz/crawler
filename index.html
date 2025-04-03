@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Web Crawler</title>
+  <style>
+    /* Windows 11 styling */
+    :root {
+      --win11-bg: #f9f9f9;
+      --win11-primary: #0078d7;
+      --win11-primary-light: #e3f2fd;
+      --win11-hover: #f0f6ff;
+      --win11-border: #e0e0e0;
+      --win11-shadow: rgba(0, 0, 0, 0.1);
+      --win11-text: #000000;
+      --win11-text-secondary: #666666;
+      --win11-card-bg: #ffffff;
+      --win11-success: #107C10;
+      --win11-warning: #FF8C00;
+      --win11-error: #E81123;
+      --json-key: #0451a5;
+      --json-string: #a31515; 
+      --json-number: #098658;
+      --json-boolean: #0000ff;
+      --json-null: #800080;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--win11-bg);
+      color: var(--win11-text);
+      padding: 20px;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 25px;
+    }
+    
+    .card {
+      background-color: var(--win11-card-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px var(--win11-shadow);
+      padding: 25px;
+      transition: box-shadow 0.3s, transform 0.2s;
+      border: 1px solid var(--win11-border);
+    }
+    
+    .card:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    h1 {
+      font-weight: 600;
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #1a1a1a;
+    }
+    
+    h2 {
+      font-weight: 500;
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    input[type="url"],
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--win11-border);
+      font-size: 16px;
+      margin-bottom: 15px;
+      outline: none;
+      transition: all 0.2s;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    input[type="url"]:focus,
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: var(--win11-primary);
+      box-shadow: 0 0 0 3px rgba(0, 120, 215, 0.2);
+    }
+    
+    button {
+      background-color: var(--win11-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    button:hover {
+      background-color: #0066b5;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+    
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button.secondary {
+      background-color: #f0f0f0;
+      color: var(--win11-text);
+      border: 1px solid var(--win11-border);
+    }
+
+    button.secondary:hover {
+      background-color: #e6e6e6;
+    }
+
+    button.success {
+      background-color: var(--win11-success);
+    }
+    
+    button.success:hover {
+      background-color: #0a6b0a;
+    }
+    
+    .url-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    
+    .url-wrapper input {
+      flex-grow: 1;
+      margin-bottom: 0;
+    }
+    
+    .url-wrapper button {
+      min-width: 100px;
+    }
+    
+    .results {
+      margin-top: 20px;
+      overflow: hidden;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .api-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid var(--win11-border);
+      gap: 12px;
+      animation: fadeIn 0.3s ease;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .api-item:hover {
+      background-color: var(--win11-hover);
+    }
+    
+    .api-item:last-child {
+      border-bottom: none;
+    }
+    
+    .api-url {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--win11-text);
+      transition: color 0.2s;
+    }
+    
+    .api-url:hover {
+      color: var(--win11-primary);
+      text-decoration: underline;
+    }
+    
+    .api-type {
+      font-size: 12px;
+      color: var(--win11-text-secondary);
+      padding: 2px 8px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+    
+    .api-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .test-api-button, .view-data-button {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .test-api-button {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    
+    .test-api-button:hover {
+      background-color: #e0e0e0;
+    }
+    
+    .view-data-button {
+      background-color: var(--win11-primary);
+      color: white;
+    }
+    
+    .view-data-button:hover {
+      background-color: #0066b5;
+    }
+    
+    .link-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid var(--win11-border);
+      border-radius: 8px;
+      margin-top: 15px;
+      background-color: white;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .link-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border: 1px solid var(--win11-border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: white;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      flex-wrap: wrap;
+    }
+    
+    .link-item:hover {
+      background-color: var(--win11-hover);
+      border-color: var(--win11-primary-hover);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .link-text {
+      font-weight: 500;
+      margin-bottom: 5px;
+      flex: 1 1 100%;
+      margin-left: 28px;
+    }
+    
+    .link-url {
+      color: var(--win11-text-secondary);
+      font-size: 0.85em;
+      word-break: break-all;
+      flex: 1 1 100%;
+      margin-top: 3px;
+      margin-bottom: 8px;
+      margin-left: 28px;
+    }
+    
+    .link-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      margin-left: 28px;
+    }
+    
+    .link-buttons {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    .link-icon {
+      position: absolute;
+      left: 15px;
+      top: 12px;
+      font-size: 18px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 500;
+    }
+    
+    .badge-same-domain {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .badge-pagination {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .badge-api {
+      background-color: #fff8e1;
+      color: #ff8f00;
+    }
+    
+    .badge-documentation {
+      background-color: #e8eaf6;
+      color: #3949ab;
+    }
+    
+    .badge-repository {
+      background-color: #e0f2f1;
+      color: #00796b;
+    }
+    
+    .badge-data {
+      background-color: #f3e5f5;
+      color: #7b1fa2;
+    }
+    
+    .crawl-link-button, .test-link-button {
+      background-color: var(--win11-primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+    }
+    
+    .crawl-link-button:hover, .test-link-button:hover {
+      background-color: var(--win11-primary-hover);
+    }
+    
+    .test-link-button {
+      background-color: #ff9800;
+    }
+    
+    .test-link-button:hover {
+      background-color: #f57c00;
+    }
+    
+    .link-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .link-search {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid var(--win11-border);
+      border-radius: 4px;
+    }
+    
+    .type-filter {
+      padding: 8px 10px;
+      border: 1px solid var(--win11-border);
+      border-radius: 4px;
+      background-color: white;
+    }
+    
+    .links-container {
+      margin-top: 15px;
+    }
+    
+    .link-type-header {
+      font-weight: 600;
+      margin: 20px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--win11-border);
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--win11-border);
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      font-weight: 500;
+      color: var(--win11-text-secondary);
+    }
+    
+    .tab.active {
+      border-bottom: 3px solid var(--win11-primary);
+      color: var(--win11-primary);
+    }
+    
+    .tab:hover:not(.active) {
+      background-color: var(--win11-hover);
+      color: var(--win11-text);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 15px;
+      overflow: auto;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 30px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      min-width: 200px;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--win11-primary);
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: var(--win11-text-secondary);
+      padding: 8px 12px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      border-left: 3px solid var(--win11-primary);
+    }
+    
+    .error {
+      color: white;
+      background-color: #ffebee;
+      margin-top: 15px;
+      display: none;
+      padding: 12px;
+      border-radius: 4px;
+      border-left: 3px solid var(--win11-error);
+      color: #d32f2f;
+    }
+
+    .success {
+      color: white;
+      background-color: #e8f5e9;
+      margin-top: 15px;
+      display: none;
+      padding: 12px;
+      border-radius: 4px;
+      border-left: 3px solid var(--win11-success);
+      color: #2e7d32;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-row > div {
+      flex: 1;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .checkbox-wrapper label {
+      cursor: pointer;
+    }
+
+    .auth-indicator {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-left: 10px;
+      background-color: var(--win11-success);
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .collapsible {
+      cursor: pointer;
+      padding: 15px;
+      background-color: #f8f8f8;
+      border: 1px solid var(--win11-border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .collapsible:hover {
+      background-color: #f0f0f0;
+    }
+
+    .collapsible:after {
+      content: '\002B';
+      font-weight: bold;
+      float: right;
+      margin-left: 5px;
+      font-size: 18px;
+    }
+
+    .active-collapse:after {
+      content: "\2212";
+    }
+
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background-color: white;
+      border-left: 1px solid var(--win11-border);
+      border-right: 1px solid var(--win11-border);
+      border-bottom: 1px solid var(--win11-border);
+      border-radius: 0 0 8px 8px;
+      margin-top: -20px;
+      margin-bottom: 20px;
+    }
+
+    .collapsible-inner {
+      padding: 20px;
+    }
+
+    .method-badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: white;
+      min-width: 55px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .method-badge.get {
+      background-color: #61affe;
+    }
+
+    .method-badge.post {
+      background-color: #49cc90;
+    }
+
+    .method-badge.put {
+      background-color: #fca130;
+    }
+
+    .method-badge.delete {
+      background-color: #f93e3e;
+    }
+
+    .method-badge.patch {
+      background-color: #50e3c2;
+    }
+
+    /* JSON viewer styles */
+    .json-viewer {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: auto;
+      max-height: 500px;
+      background-color: #f9f9f9;
+      border: 1px solid var(--win11-border);
+      border-radius: 8px;
+      padding: 20px;
+      white-space: pre-wrap;
+    }
+
+    .json-key {
+      color: var(--json-key);
+    }
+
+    .json-string {
+      color: var(--json-string);
+    }
+
+    .json-number {
+      color: var(--json-number);
+    }
+
+    .json-boolean {
+      color: var(--json-boolean);
+    }
+
+    .json-null {
+      color: var(--json-null);
+    }
+
+    /* API modal styling */
+    .api-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(5px);
+    }
+
+    .api-detail-content {
+      background-color: white;
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 1000px;
+      margin: 50px auto;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      animation: modalSlideIn 0.3s ease;
+    }
+    
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #666;
+      cursor: pointer;
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      padding: 5px;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #333;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: #333;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--win11-border);
+    }
+
+    .api-info {
+      margin-bottom: 25px;
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .api-info-item {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .api-info-label {
+      font-weight: 600;
+      width: 120px;
+      color: #555;
+    }
+
+    .api-info-value {
+      flex: 1;
+      word-break: break-all;
+    }
+    
+    /* API Response Tabs */
+    .api-details-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--win11-border);
+    }
+    
+    .api-details-tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      font-weight: 500;
+      color: #666;
+    }
+    
+    .api-details-tab:hover {
+      color: #333;
+    }
+    
+    .api-details-tab.active {
+      color: var(--win11-primary);
+      border-bottom-color: var(--win11-primary);
+    }
+    
+    /* Response data styling */
+    .json-response, .xml-response, .text-response, .raw-json-response {
+      background-color: #f8f8f9;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      max-height: 50vh;
+      line-height: 1.6;
+      border: 1px solid #eee;
+    }
+    
+    .response-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .tool-button {
+      background-color: #f0f0f0;
+      color: #333;
+      border: 1px solid #ddd;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .tool-button:hover {
+      background-color: #e0e0e0;
+    }
+    
+    /* Headers table styling */
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .header-table th, .header-table td {
+      text-align: left;
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .header-table th {
+      background-color: #f5f5f5;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    .header-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .header-table tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    
+    .header-name {
+      font-weight: 500;
+      color: #555;
+    }
+    
+    /* Toast notifications */
+    #toastContainer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .toast {
+      padding: 12px 25px;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      transform: translateX(100%);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      min-width: 200px;
+      max-width: 350px;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    
+    .toast-success {
+      background-color: var(--win11-success);
+    }
+    
+    .toast-error {
+      background-color: var(--win11-error);
+    }
+    
+    .toast-info {
+      background-color: var(--win11-primary);
+    }
+    
+    .toast-warning {
+      background-color: var(--win11-warning);
+    }
+    
+    /* URL suggestions */
+    .url-suggestions {
+      margin: 15px 0 20px;
+      background-color: var(--win11-primary-light);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 120, 215, 0.2);
+    }
+    
+    .url-suggestions p {
+      margin-bottom: 10px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .suggestions-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .suggestion {
+      background-color: white;
+      border: 1px solid rgba(0, 120, 215, 0.3);
+      color: var(--win11-primary);
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .suggestion:hover {
+      background-color: var(--win11-primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* No results message */
+    .no-results {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+      font-style: italic;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    /* Search box styling */
+    .search-box {
+      margin-bottom: 20px;
+    }
+    
+    .search-box input {
+      padding-left: 35px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+      background-repeat: no-repeat;
+      background-position: 10px center;
+    }
+    
+    /* Badge styling */
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      margin-right: 8px;
+      font-weight: 500;
+    }
+    
+    .badge-same-domain {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .badge-pagination {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .url-wrapper {
+        flex-direction: column;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .api-item, .link-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .api-actions {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    /* Additional subtle improvements */
+    ::selection {
+      background-color: rgba(0, 120, 215, 0.2);
+    }
+    
+    input::placeholder {
+      color: #aaa;
+    }
+    
+    .api-detail-modal::-webkit-scrollbar,
+    .json-response::-webkit-scrollbar,
+    .link-list::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    .api-detail-modal::-webkit-scrollbar-thumb,
+    .json-response::-webkit-scrollbar-thumb,
+    .link-list::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+    
+    .api-detail-modal::-webkit-scrollbar-thumb:hover,
+    .json-response::-webkit-scrollbar-thumb:hover,
+    .link-list::-webkit-scrollbar-thumb:hover {
+      background-color: #aaa;
+    }
+    
+    /* Focus styles for keyboard navigation */
+    button:focus, input:focus, .tab:focus, .api-item:focus {
+      outline: 2px solid rgba(0, 120, 215, 0.5);
+      outline-offset: 2px;
+    }
+
+    /* Make sure headers content is properly styled */
+    #apiHeadersContent {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>API Web Crawler</h1>
+      <p>Enter a URL to crawl and discover APIs (GET requests only)</p>
+      
+      <div class="collapsible">
+        <span>Authentication (Optional)</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="collapsible-inner">
+          <div class="form-group">
+            <label for="loginUrl">Login URL</label>
+            <input type="url" id="loginUrl" placeholder="https://example.com/login">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" placeholder="Username">
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Password">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="usernameField">Username Field Name (in form)</label>
+              <input type="text" id="usernameField" placeholder="username" value="username">
+            </div>
+            <div class="form-group">
+              <label for="passwordField">Password Field Name (in form)</label>
+              <input type="text" id="passwordField" placeholder="password" value="password">
+            </div>
+          </div>
+          
+          <button id="loginBtn">Login</button>
+          <div class="success" id="loginSuccess"></div>
+          <div class="error" id="loginError"></div>
+        </div>
+      </div>
+      
+      <div class="url-wrapper">
+        <input type="url" id="urlInput" placeholder="https://example.com" />
+        <button id="crawlBtn">Crawl</button>
+      </div>
+      
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="useAuth" />
+        <label for="useAuth">Use authentication when crawling</label>
+      </div>
+      
+      <div class="status" id="status"></div>
+      <div class="error" id="error"></div>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Crawling website... Please wait</p>
+    </div>
+    
+    <div class="card results" id="results" style="display: none;">
+      <div class="tabs">
+        <div class="tab active" data-tab="apis">API Endpoints</div>
+        <div class="tab" data-tab="links">Links</div>
+        <div class="tab" data-tab="response" id="responseTab" style="display: none;">API Response</div>
+      </div>
+      
+      <div class="tab-content active" id="apisTab">
+        <h2>Discovered APIs <span id="authIndicator" style="display: none;" class="auth-indicator">Authenticated</span></h2>
+        
+        <div class="search-box">
+          <input type="text" id="apiSearch" placeholder="Search APIs...">
+        </div>
+        
+        <div id="apiList"></div>
+        
+        <div class="export-section">
+          <button id="exportBtn" class="secondary">Export All API Data</button>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="linksTab">
+        <h2>Website Links</h2>
+        <p>Click on a link to crawl it</p>
+        <div class="link-list" id="linkList"></div>
+      </div>
+      
+      <div class="tab-content" id="responseTab">
+        <h2>API Response Data</h2>
+        <div id="apiResponseDetails">
+          <p>Select an API endpoint to view its response data</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- API Details Modal -->
+  <div id="apiDetailModal" class="api-detail-modal">
+    <div class="api-detail-content">
+      <span class="modal-close">&times;</span>
+      <h3 id="modalTitle" class="modal-title">API Details</h3>
+      
+      <div class="api-info">
+        <div class="api-info-item">
+          <div class="api-info-label">URL:</div>
+          <div id="apiUrl" class="api-info-value"></div>
+        </div>
+        <div class="api-info-item">
+          <div class="api-info-label">Method:</div>
+          <div id="apiMethod" class="api-info-value"></div>
+        </div>
+        <div class="api-info-item">
+          <div class="api-info-label">Status:</div>
+          <div id="apiStatus" class="api-info-value"></div>
+        </div>
+        <div class="api-info-item">
+          <div class="api-info-label">Content Type:</div>
+          <div id="apiContentType" class="api-info-value"></div>
+        </div>
+      </div>
+      
+      <div class="api-details-tabs">
+        <div id="apiResponseTab" class="api-details-tab active">Response</div>
+        <div id="apiHeadersTab" class="api-details-tab">Headers</div>
+      </div>
+      
+      <div id="apiResponseContent" class="tab-content active">
+        <div id="apiResponse"></div>
+      </div>
+      
+      <div id="apiHeadersContent" class="tab-content">
+        <div id="apiHeaders"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    // Global variables
+    let urlInput, apiList, linkList, crawlBtn, loading;
+    let statusMessage, errorMessage, useAuth;
+    let loginBtn, loginSuccess, loginError;
+    let currentUrl = '';
+    let discoveredApis = [];
+    let discoveredLinks = [];
+    
+    // Function to handle the form submission
+    function handleFormSubmit(event) {
+      if (event) event.preventDefault();
+      const targetUrl = urlInput.value.trim();
+      
+      if (!targetUrl) {
+        setError('Please enter a URL to crawl');
+        return;
+      }
+      
+      // Show loading spinner
+      loading.style.display = 'block';
+      
+      // Clear previous errors
+      setError('');
+      
+      // Get authentication preference
+      const useAuthentication = useAuth.checked;
+      
+      // Send the crawl request to the main process
+      crawlWebsite(targetUrl, useAuthentication);
+    }
+    
+    // Function to crawl a website
+    function crawlWebsite(targetUrl, useAuth = false) {
+      setStatus(`Crawling ${targetUrl}...`);
+      
+      // Send message to main process
+      ipcRenderer.send('crawl-website', {
+        targetUrl,
+        useAuth
+      });
+    }
+
+    // Display the discovered APIs
+    function displayApis(apis) {
+      if (!apis || apis.length === 0) {
+        apiList.innerHTML = '<p>No APIs found</p>';
+        return;
+      }
+      
+      // Clear the list
+      apiList.innerHTML = '';
+      
+      // Add each API to the list
+      apis.forEach(api => {
+        const apiItem = document.createElement('div');
+        apiItem.className = 'api-item';
+        
+        // Method badge
+        const methodBadge = document.createElement('span');
+        methodBadge.className = 'method-badge ' + (api.method ? api.method.toLowerCase() : 'get');
+        methodBadge.textContent = api.method || 'GET';
+        
+        // API URL
+        const apiUrl = document.createElement('span');
+        apiUrl.className = 'api-url';
+        apiUrl.textContent = api.url;
+        apiUrl.title = api.url;
+        
+        // Make the URL clickable to view data
+        apiUrl.onclick = () => testApi(api.url, api.method);
+        
+        // API type label
+        const typeLabel = document.createElement('span');
+        typeLabel.className = 'api-type';
+        typeLabel.textContent = api.type || 'api';
+        
+        // Action buttons container
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'api-actions';
+        
+        // Test button
+        const testButton = document.createElement('button');
+        testButton.className = 'test-api-button';
+        testButton.textContent = 'Test';
+        testButton.onclick = (e) => {
+          e.stopPropagation(); // Prevent event bubbling
+          testApi(api.url, api.method);
+        };
+        
+        // Add test button to actions
+        actionsDiv.appendChild(testButton);
+        
+        // View Data button for JSON APIs 
+        if (api.type === 'json-api' || contentTypeIsJson(api.contentType) || 
+            api.url.includes('dummyjson.com') || api.url.includes('jsonplaceholder.typicode.com')) {
+          const viewDataButton = document.createElement('button');
+          viewDataButton.className = 'view-data-button';
+          viewDataButton.textContent = 'View Data';
+          viewDataButton.onclick = (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            testApi(api.url, api.method);
+          };
+          
+          // Add view button to actions
+          actionsDiv.appendChild(viewDataButton);
+        }
+        
+        // Add elements to item
+        apiItem.appendChild(methodBadge);
+        apiItem.appendChild(apiUrl);
+        apiItem.appendChild(typeLabel);
+        apiItem.appendChild(actionsDiv);
+        
+        // Make the entire item clickable
+        apiItem.addEventListener('click', () => testApi(api.url, api.method));
+        
+        // Add item to list
+        apiList.appendChild(apiItem);
+      });
+      
+      // Show the results container
+      document.getElementById('results').style.display = 'block';
+    }
+    
+    // Helper to check if content type is JSON
+    function contentTypeIsJson(contentType) {
+      if (!contentType) return false;
+      return contentType.includes('json') || contentType.includes('application/json');
+    }
+    
+    // Function to test API endpoint
+    function testApi(apiUrl, method = 'GET') {
+      try {
+        // Show loading state
+        loading.style.display = 'block';
+        setStatus(`Testing API: ${apiUrl}...`);
+        
+        // Call main process to fetch API data
+        const useAuthentication = useAuth.checked;
+        
+        // Call the API
+        ipcRenderer.send('fetch-api-data', { 
+          apiUrl, 
+          useAuth: useAuthentication,
+          method,
+          headers: {}
+        });
+      } catch (error) {
+        setError(`Error testing API: ${error.message}`);
+        loading.style.display = 'none';
+      }
+    }
+    
+    // Show API data in the UI
+    function showApiData(url, method, data, contentType) {
+      // Create a synthetic API response to pass to the handler
+      const apiResponse = {
+        success: true,
+        data: {
+          url: url,
+          method: method || 'GET',
+          statusCode: 200,
+          statusText: 'OK',
+          contentType: contentType || 'application/json',
+          data: data,
+          dataType: 'json',
+          headers: [
+            { key: 'content-type', value: contentType || 'application/json' }
+          ]
+        }
+      };
+      
+      // Use the existing API data handler
+      apiDataResultHandler(null, apiResponse);
+    }
+    
+    // Handle API data result
+    function apiDataResultHandler(event, response) {
+      loading.style.display = 'none';
+      
+      if (response.success) {
+        const { data } = response;
+        
+        // Show the API detail modal
+        const modal = document.getElementById('apiDetailModal');
+        modal.style.display = 'block';
+        
+        // Update modal title
+        document.getElementById('modalTitle').textContent = `API: ${data.url}`;
+        
+        // Set API details
+        document.getElementById('apiUrl').textContent = data.url;
+        document.getElementById('apiMethod').textContent = data.method;
+        document.getElementById('apiStatus').textContent = `${data.statusCode} ${data.statusText}`;
+        document.getElementById('apiContentType').textContent = data.contentType;
+        
+        // Update API response section
+        const responseContainer = document.getElementById('apiResponse');
+        responseContainer.innerHTML = '';
+        
+        // Display the JSON data with syntax highlighting
+        if (typeof data.data === 'object') {
+          // Add toolbar for JSON response
+          const toolbar = document.createElement('div');
+          toolbar.className = 'response-toolbar';
+          
+          // Add copy button
+          const copyBtn = document.createElement('button');
+          copyBtn.textContent = 'Copy JSON';
+          copyBtn.className = 'tool-button';
+          copyBtn.onclick = () => copyToClipboard(JSON.stringify(data.data, null, 2));
+
+          // Add raw/formatted toggle
+          const toggleBtn = document.createElement('button');
+          toggleBtn.textContent = 'View Raw';
+          toggleBtn.className = 'tool-button';
+          toggleBtn.dataset.view = 'formatted';
+          toggleBtn.onclick = function() {
+            const jsonContainer = document.querySelector('.json-response');
+            const rawContainer = document.querySelector('.raw-json-response');
+            
+            if (this.dataset.view === 'formatted') {
+              jsonContainer.style.display = 'none';
+              
+              if (!rawContainer) {
+                const rawPre = document.createElement('pre');
+                rawPre.className = 'raw-json-response';
+                rawPre.textContent = JSON.stringify(data.data, null, 2);
+                responseContainer.appendChild(rawPre);
+              } else {
+                rawContainer.style.display = 'block';
+              }
+              
+              this.textContent = 'View Formatted';
+              this.dataset.view = 'raw';
+            } else {
+              if (rawContainer) rawContainer.style.display = 'none';
+              jsonContainer.style.display = 'block';
+              this.textContent = 'View Raw';
+              this.dataset.view = 'formatted';
+            }
+          };
+          
+          toolbar.appendChild(copyBtn);
+          toolbar.appendChild(toggleBtn);
+          
+          // Create JSON display
+          const jsonPre = document.createElement('pre');
+          jsonPre.className = 'json-response';
+          
+          // Format JSON with syntax highlighting
+          jsonPre.innerHTML = formatJsonWithHighlighting(data.data);
+          
+          // Add everything to the container
+          responseContainer.appendChild(toolbar);
+          responseContainer.appendChild(jsonPre);
+        } else {
+          // For non-JSON data, display as text
+          const pre = document.createElement('pre');
+          pre.className = 'text-response';
+          pre.textContent = typeof data.data === 'string' 
+            ? data.data 
+            : JSON.stringify(data.data, null, 2);
+          
+          responseContainer.appendChild(pre);
+        }
+        
+        // Update headers tab
+        updateHeadersDisplay(data.headers || []);
+        
+        // Show response tab by default
+        showModalTab('apiResponseTab');
+      } else {
+        setError(`API request failed: ${response.error}`);
+      }
+    }
+    
+    // Format JSON with syntax highlighting
+    function formatJsonWithHighlighting(data) {
+      const json = JSON.stringify(data, null, 2);
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+    
+    // Update headers display
+    function updateHeadersDisplay(headers) {
+      const headersContainer = document.getElementById('apiHeaders');
+      headersContainer.innerHTML = '';
+      
+      if (headers && headers.length > 0) {
+        const headerTable = document.createElement('table');
+        headerTable.className = 'header-table';
+        
+        // Add header row
+        const headerRow = document.createElement('tr');
+        const headerNameCell = document.createElement('th');
+        headerNameCell.textContent = 'Name';
+        const headerValueCell = document.createElement('th');
+        headerValueCell.textContent = 'Value';
+        headerRow.appendChild(headerNameCell);
+        headerRow.appendChild(headerValueCell);
+        headerTable.appendChild(headerRow);
+        
+        // Add header data
+        headers.forEach(header => {
+          const row = document.createElement('tr');
+          
+          const nameCell = document.createElement('td');
+          nameCell.textContent = header.key;
+          nameCell.className = 'header-name';
+          
+          const valueCell = document.createElement('td');
+          valueCell.textContent = header.value;
+          valueCell.className = 'header-value';
+          
+          row.appendChild(nameCell);
+          row.appendChild(valueCell);
+          headerTable.appendChild(row);
+        });
+        
+        headersContainer.appendChild(headerTable);
+      } else {
+        headersContainer.textContent = 'No headers available';
+      }
+    }
+    
+    // Handle crawl result from main process
+    function handleCrawlResult(event, result) {
+      loading.style.display = 'none';
+      
+      if (result.success) {
+        const { data } = result;
+        currentUrl = data.url;
+        
+        // Show success message
+        setStatus(`Successfully crawled: ${data.url}`);
+        
+        // Store discovered APIs
+        if (data.apis && data.apis.length > 0) {
+          discoveredApis = [...discoveredApis, ...data.apis];
+          
+          // Remove duplicates based on URL
+          const uniqueUrls = new Set();
+          discoveredApis = discoveredApis.filter(api => {
+            if (uniqueUrls.has(api.url)) {
+              return false;
+            }
+            uniqueUrls.add(api.url);
+            return true;
+          });
+          
+          // Update the UI
+          displayApis(discoveredApis);
+        } else {
+          apiList.innerHTML = '<p class="no-results">No APIs found on this page</p>';
+        }
+        
+        // Handle links if they exist
+        if (data.links && data.links.length > 0) {
+          discoveredLinks = [...discoveredLinks, ...data.links];
+          
+          // Remove duplicates
+          const uniqueUrls = new Set();
+          discoveredLinks = discoveredLinks.filter(link => {
+            if (uniqueUrls.has(link.url)) {
+              return false;
+            }
+            uniqueUrls.add(link.url);
+            return true;
+          });
+          
+          // Update the UI
+          displayLinks(discoveredLinks);
+        } else {
+          linkList.innerHTML = '<p class="no-results">No links found on this page</p>';
+        }
+        
+        // If the response itself is an API (JSON), display it immediately
+        if (data.isApi && data.apiData) {
+          // Immediately show the API data when it's a direct API call
+          showApiData(data.url, 'GET', data.apiData, data.contentType);
+        }
+      } else {
+        setError(`Error: ${result.error}`);
+      }
+    }
+    
+    // Display links in the UI
+    function displayLinks(links) {
+      if (!links || links.length === 0) {
+        linkList.innerHTML = '<p class="no-results">No links found</p>';
+        return;
+      }
+      
+      // Clear the list
+      linkList.innerHTML = '';
+      
+      // Add filter controls
+      const filterContainer = document.createElement('div');
+      filterContainer.className = 'link-filters';
+      
+      const searchInput = document.createElement('input');
+      searchInput.type = 'text';
+      searchInput.placeholder = 'Search links...';
+      searchInput.className = 'link-search';
+      
+      const typeFilter = document.createElement('select');
+      typeFilter.className = 'type-filter';
+      typeFilter.innerHTML = `
+        <option value="all">All Types</option>
+        <option value="api">API</option>
+        <option value="potentialJsonApi">JSON APIs</option>
+        <option value="sameDomain">Same Domain</option>
+      `;
+      
+      filterContainer.appendChild(searchInput);
+      filterContainer.appendChild(typeFilter);
+      linkList.appendChild(filterContainer);
+      
+      // Create link items container
+      const linksContainer = document.createElement('div');
+      linksContainer.className = 'links-container';
+      linkList.appendChild(linksContainer);
+      
+      // Display all links initially
+      renderLinks(links, linksContainer);
+      
+      // Set up event listeners for filters
+      searchInput.addEventListener('input', filterLinks);
+      typeFilter.addEventListener('change', filterLinks);
+      
+      function filterLinks() {
+        const searchValue = searchInput.value.toLowerCase();
+        const typeValue = typeFilter.value;
+        
+        const filteredLinks = links.filter(link => {
+          // Search filter
+          if (searchValue && !link.url.toLowerCase().includes(searchValue) && 
+              !link.text.toLowerCase().includes(searchValue)) {
+            return false;
+          }
+          
+          // Type filter
+          if (typeValue === 'api' && !link.type?.includes('api') && !link.url.includes('/api/')) {
+            return false;
+          }
+          if (typeValue === 'potentialJsonApi' && !link.potentialJsonApi) {
+            return false;
+          }
+          if (typeValue === 'sameDomain' && !link.sameDomain) {
+            return false;
+          }
+          
+          return true;
+        });
+        
+        renderLinks(filteredLinks, linksContainer);
+      }
+      
+      function renderLinks(links, container) {
+        container.innerHTML = '';
+        
+        if (links.length === 0) {
+          container.innerHTML = '<p class="no-results">No links match your filters</p>';
+          return;
+        }
+        
+        // Add each link to the list
+        links.forEach(link => {
+          const linkItem = document.createElement('div');
+          linkItem.className = 'link-item';
+          
+          // Add icon based on link type
+          const linkIcon = document.createElement('span');
+          linkIcon.className = 'link-icon';
+          if (link.potentialJsonApi) {
+            linkIcon.innerHTML = '🔌';
+            linkIcon.title = "Potential JSON API";
+          } else if (link.type === 'api') {
+            linkIcon.innerHTML = '🔌';
+            linkIcon.title = "API Endpoint";
+          } else if (link.type === 'documentation') {
+            linkIcon.innerHTML = '📚';
+            linkIcon.title = "Documentation";
+          } else if (link.type === 'repository') {
+            linkIcon.innerHTML = '📁';
+            linkIcon.title = "Repository";
+          } else {
+            linkIcon.innerHTML = '🔗';
+            linkIcon.title = "Link";
+          }
+          
+          const linkText = document.createElement('div');
+          linkText.className = 'link-text';
+          linkText.textContent = link.text || link.url;
+          
+          const linkUrl = document.createElement('div');
+          linkUrl.className = 'link-url';
+          linkUrl.textContent = link.url;
+          
+          // Add badges container
+          const badgesContainer = document.createElement('div');
+          badgesContainer.className = 'link-badges';
+          
+          // Add indicators as badges
+          if (link.sameDomain) {
+            const sameDomainBadge = document.createElement('span');
+            sameDomainBadge.className = 'badge badge-same-domain';
+            sameDomainBadge.textContent = 'Same Domain';
+            badgesContainer.appendChild(sameDomainBadge);
+          }
+          
+          if (link.isPagination) {
+            const paginationBadge = document.createElement('span');
+            paginationBadge.className = 'badge badge-pagination';
+            paginationBadge.textContent = 'Pagination';
+            badgesContainer.appendChild(paginationBadge);
+          }
+          
+          if (link.potentialJsonApi) {
+            const apiBadge = document.createElement('span');
+            apiBadge.className = 'badge badge-api';
+            apiBadge.textContent = 'JSON API';
+            badgesContainer.appendChild(apiBadge);
+          }
+          
+          if (link.type && link.type !== 'general') {
+            const typeBadge = document.createElement('span');
+            typeBadge.className = `badge badge-${link.type}`;
+            typeBadge.textContent = link.type;
+            badgesContainer.appendChild(typeBadge);
+          }
+          
+          // Create button container
+          const buttonContainer = document.createElement('div');
+          buttonContainer.className = 'link-buttons';
+          
+          // Add crawl button
+          const crawlButton = document.createElement('button');
+          crawlButton.className = 'crawl-link-button';
+          crawlButton.textContent = 'Crawl';
+          crawlButton.onclick = (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            crawlWebsite(link.url, useAuth.checked);
+          };
+          buttonContainer.appendChild(crawlButton);
+          
+          // Add Test API button for potential JSON APIs
+          if (link.potentialJsonApi) {
+            const testButton = document.createElement('button');
+            testButton.className = 'test-link-button';
+            testButton.textContent = 'Test API';
+            testButton.onclick = (e) => {
+              e.stopPropagation();
+              testApi(link.url, 'GET');
+            };
+            buttonContainer.appendChild(testButton);
+          }
+          
+          // Assemble the link item
+          linkItem.appendChild(linkIcon);
+          linkItem.appendChild(linkText);
+          linkItem.appendChild(linkUrl);
+          linkItem.appendChild(badgesContainer);
+          linkItem.appendChild(buttonContainer);
+          
+          // Make the entire item clickable
+          linkItem.addEventListener('click', () => crawlWebsite(link.url, useAuth.checked));
+          
+          container.appendChild(linkItem);
+        });
+      }
+    }
+    
+    // Handle login result
+    function handleLoginResult(event, result) {
+      loading.style.display = 'none';
+      
+      if (result.success) {
+        loginSuccess.textContent = 'Login successful! You can now crawl authenticated pages.';
+        loginSuccess.style.display = 'block';
+        loginError.style.display = 'none';
+        
+        // Show a toast notification
+        showToast('Login successful!', 'success');
+        
+        // Update auth indicator
+        document.getElementById('authIndicator').style.display = 'inline-block';
+        
+        // Close the collapsible
+        const collapsibleContent = document.querySelector('.collapsible-content');
+        collapsibleContent.style.maxHeight = null;
+        document.querySelector('.collapsible').classList.remove('active-collapse');
+      } else {
+        loginError.textContent = `Login failed: ${result.error}`;
+        loginError.style.display = 'block';
+        loginSuccess.style.display = 'none';
+        
+        // Show a toast notification
+        showToast('Login failed: ' + result.error, 'error');
+      }
+    }
+    
+    // Function to set status message
+    function setStatus(message) {
+      statusMessage.textContent = message;
+      statusMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+    
+    // Function to set error message
+    function setError(message) {
+      if (!message) {
+        errorMessage.style.display = 'none';
+        return;
+      }
+      
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      statusMessage.style.display = 'none';
+      
+      // Show a toast for errors
+      showToast(message, 'error');
+    }
+    
+    // Show toast notification
+    function showToast(message, type = 'info') {
+      // Create toast container if it doesn't exist
+      let toastContainer = document.getElementById('toastContainer');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      
+      // Add to container
+      toastContainer.appendChild(toast);
+      
+      // Trigger animation and remove after delay
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toastContainer.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+    
+    // Tab switching function for modal tabs
+    function showModalTab(tabId) {
+      console.log('Showing modal tab:', tabId);
+      
+      // Get the corresponding content ID
+      const contentId = tabId.replace('Tab', 'Content');
+      console.log('Content ID:', contentId);
+      
+      // Hide all modal tab contents
+      document.querySelectorAll('#apiDetailModal .tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Show the selected tab content
+      document.getElementById(contentId).classList.add('active');
+      
+      // Update tab active states
+      document.querySelectorAll('#apiDetailModal .api-details-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.getElementById(tabId).classList.add('active');
+    }
+    
+    // Copy to clipboard function
+    function copyToClipboard(text) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      
+      // Show toast notification
+      showToast('Copied to clipboard!', 'success');
+    }
+    
+    // Handle login button click
+    function handleLogin() {
+      const loginUrl = document.getElementById('loginUrl').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const usernameField = document.getElementById('usernameField').value;
+      const passwordField = document.getElementById('passwordField').value;
+      
+      if (!loginUrl || !username || !password) {
+        setError('Please fill in all login fields');
+        return;
+      }
+      
+      // Show loading
+      loading.style.display = 'block';
+      
+      // Send login request to main process
+      ipcRenderer.send('login', {
+        loginUrl,
+        username,
+        password,
+        usernameField,
+        passwordField
+      });
+    }
+    
+    // Filter APIs function
+    function filterApis(searchTerm) {
+      if (!searchTerm) {
+        // If no search term, display all APIs
+        displayApis(discoveredApis);
+        return;
+      }
+      
+      searchTerm = searchTerm.toLowerCase();
+      
+      // Filter APIs that match the search term
+      const filteredApis = discoveredApis.filter(api => 
+        api.url.toLowerCase().includes(searchTerm) || 
+        (api.type && api.type.toLowerCase().includes(searchTerm)) ||
+        (api.method && api.method.toLowerCase().includes(searchTerm))
+      );
+      
+      // Display the filtered APIs
+      displayApis(filteredApis);
+    }
+    
+    // Export APIs to JSON
+    function exportApis() {
+      if (discoveredApis.length === 0) {
+        showToast('No APIs to export', 'warning');
+        return;
+      }
+      
+      // Prepare data for export
+      const exportData = {
+        url: currentUrl,
+        timestamp: new Date().toISOString(),
+        apiCount: discoveredApis.length,
+        apis: discoveredApis
+      };
+      
+      // Send to main process
+      ipcRenderer.send('export-data', exportData);
+      
+      showToast('Exporting API data...', 'info');
+    }
+    
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get DOM elements
+      urlInput = document.getElementById('urlInput');
+      apiList = document.getElementById('apiList');
+      linkList = document.getElementById('linkList');
+      crawlBtn = document.getElementById('crawlBtn');
+      loading = document.getElementById('loading');
+      statusMessage = document.getElementById('status');
+      errorMessage = document.getElementById('error');
+      useAuth = document.getElementById('useAuth');
+      loginBtn = document.getElementById('loginBtn');
+      loginSuccess = document.getElementById('loginSuccess');
+      loginError = document.getElementById('loginError');
+      
+      // Add sample URL suggestions
+      const suggestionUrls = [
+        'https://dummyjson.com/products',
+        'https://dummyjson.com/users',
+        'https://jsonplaceholder.typicode.com/posts',
+        'https://randomuser.me/api/'
+      ];
+      
+      const suggestionsContainer = document.createElement('div');
+      suggestionsContainer.className = 'url-suggestions';
+      suggestionsContainer.innerHTML = '<p>Try these sample APIs:</p>';
+      
+      const suggestionsList = document.createElement('div');
+      suggestionsList.className = 'suggestions-list';
+      
+      suggestionUrls.forEach(url => {
+        const suggestion = document.createElement('button');
+        suggestion.className = 'suggestion';
+        suggestion.textContent = url;
+        suggestion.onclick = () => {
+          urlInput.value = url;
+          handleFormSubmit();
+        };
+        suggestionsList.appendChild(suggestion);
+      });
+      
+      suggestionsContainer.appendChild(suggestionsList);
+      urlInput.parentNode.parentNode.insertBefore(suggestionsContainer, urlInput.parentNode.nextSibling);
+      
+      // Set up event listeners
+      crawlBtn.addEventListener('click', handleFormSubmit);
+      
+      urlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          handleFormSubmit(e);
+        }
+      });
+      
+      // Login button
+      loginBtn.addEventListener('click', handleLogin);
+      
+      // API search
+      const apiSearch = document.getElementById('apiSearch');
+      if (apiSearch) {
+        apiSearch.addEventListener('input', e => {
+          filterApis(e.target.value);
+        });
+      }
+      
+      // Export button
+      const exportBtn = document.getElementById('exportBtn');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', exportApis);
+      }
+      
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.getAttribute('data-tab');
+          
+          // Hide all tab contents
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          
+          // Show selected tab content
+          document.getElementById(tabId + 'Tab').classList.add('active');
+          
+          // Mark this tab as active
+          document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('active');
+          });
+          this.classList.add('active');
+        });
+      });
+      
+      // Collapsible sections
+      const coll = document.getElementsByClassName('collapsible');
+      for (let i = 0; i < coll.length; i++) {
+        coll[i].addEventListener('click', function() {
+          this.classList.toggle('active-collapse');
+          const content = this.nextElementSibling;
+          if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + 'px';
+          }
+        });
+      }
+      
+      // Register IPC event handlers
+      ipcRenderer.on('crawl-result', handleCrawlResult);
+      ipcRenderer.on('api-data-result', apiDataResultHandler);
+      ipcRenderer.on('login-result', handleLoginResult);
+      ipcRenderer.on('export-complete', (event, result) => {
+        if (result.success) {
+          showToast(`API data exported to: ${result.filePath}`, 'success');
+        } else {
+          showToast(`Export failed: ${result.error}`, 'error');
+        }
+      });
+      
+      // Close modal when clicking the X
+      document.querySelectorAll('.modal-close').forEach(closer => {
+        closer.addEventListener('click', function() {
+          document.getElementById('apiDetailModal').style.display = 'none';
+        });
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
+        const modal = document.getElementById('apiDetailModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+      
+      // Keyboard shortcuts
+      window.addEventListener('keydown', function(e) {
+        // Escape key to close modal
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('apiDetailModal');
+          if (modal.style.display === 'block') {
+            modal.style.display = 'none';
+          }
+        }
+      });
+      
+      // Set up modal tab switching
+      document.getElementById('apiResponseTab').addEventListener('click', function() {
+        showModalTab('apiResponseTab');
+      });
+      
+      document.getElementById('apiHeadersTab').addEventListener('click', function() {
+        showModalTab('apiHeadersTab');
+      });
+    });
+  </script>
+</body>
+</html> 
