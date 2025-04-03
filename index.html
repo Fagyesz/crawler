@@ -24,6 +24,7 @@
       --json-number: #098658;
       --json-boolean: #0000ff;
       --json-null: #800080;
+      --recommended: #107C10;
     }
     
     * {
@@ -1056,6 +1057,24 @@
     #apiHeadersContent {
       margin-top: 10px;
     }
+
+    .recommended-api {
+      border-left: 4px solid var(--recommended);
+      background-color: rgba(16, 124, 16, 0.05);
+    }
+    
+    .recommended-badge {
+      background-color: var(--recommended);
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    
+    .url-suggestions button.suggestion:nth-child(-n+9) {
+      border-left: 3px solid var(--recommended);
+    }
   </style>
 </head>
 <body>
@@ -1252,10 +1271,27 @@
       // Clear the list
       apiList.innerHTML = '';
       
+      // Sort APIs to show recommended ones first
+      apis.sort((a, b) => {
+        // DummyJSON APIs first
+        if ((a.recommended && !b.recommended) || a.url.includes('dummyjson.com') && !b.url.includes('dummyjson.com')) {
+          return -1;
+        }
+        if ((!a.recommended && b.recommended) || !a.url.includes('dummyjson.com') && b.url.includes('dummyjson.com')) {
+          return 1;
+        }
+        return 0;
+      });
+      
       // Add each API to the list
       apis.forEach(api => {
         const apiItem = document.createElement('div');
         apiItem.className = 'api-item';
+        
+        // Add "recommended" class for DummyJSON APIs
+        if (api.recommended || api.url.includes('dummyjson.com')) {
+          apiItem.classList.add('recommended-api');
+        }
         
         // Method badge
         const methodBadge = document.createElement('span');
@@ -1275,6 +1311,14 @@
         const typeLabel = document.createElement('span');
         typeLabel.className = 'api-type';
         typeLabel.textContent = api.type || 'api';
+        
+        // Recommended badge for DummyJSON
+        if (api.recommended || api.url.includes('dummyjson.com')) {
+          const recBadge = document.createElement('span');
+          recBadge.className = 'recommended-badge';
+          recBadge.textContent = 'Recommended';
+          apiItem.appendChild(recBadge);
+        }
         
         // Action buttons container
         const actionsDiv = document.createElement('div');
@@ -1993,15 +2037,22 @@
       
       // Add sample URL suggestions
       const suggestionUrls = [
+        'https://dummyjson.com/',
         'https://dummyjson.com/products',
         'https://dummyjson.com/users',
+        'https://dummyjson.com/carts',
+        'https://dummyjson.com/posts',
+        'https://dummyjson.com/comments',
+        'https://dummyjson.com/quotes',
+        'https://dummyjson.com/todos',
+        'https://dummyjson.com/recipes',
         'https://jsonplaceholder.typicode.com/posts',
         'https://randomuser.me/api/'
       ];
       
       const suggestionsContainer = document.createElement('div');
       suggestionsContainer.className = 'url-suggestions';
-      suggestionsContainer.innerHTML = '<p>Try these sample APIs:</p>';
+      suggestionsContainer.innerHTML = '<p>Try these sample APIs: <b>DummyJSON</b> recommended</p>';
       
       const suggestionsList = document.createElement('div');
       suggestionsList.className = 'suggestions-list';

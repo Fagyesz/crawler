@@ -1,3 +1,6 @@
+// Add Web Streams API polyfill for ReadableStream
+globalThis.ReadableStream = require('stream/web').ReadableStream;
+
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
@@ -8,6 +11,12 @@ const querystring = require('querystring');
 const fs = require('fs');
 const https = require('https');
 const { promisify } = require('util');
+
+// Hide console window in production
+if (process.env.NODE_ENV === 'production') {
+  // This only affects Windows builds
+  process.env.ELECTRON_NO_ATTACH_CONSOLE = true;
+}
 
 // Keep a global reference of the window object to prevent garbage collection
 let mainWindow;

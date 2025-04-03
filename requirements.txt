@@ -1,0 +1,5 @@
+# This file is for any Python dependencies if needed alongside the Node.js app
+# The primary application uses Node.js/Electron
+requests==2.28.1
+beautifulsoup4==4.11.1
+lxml==4.9.1 

@@ -1,25 +1,88 @@
 {
-  "name": "webcrawler",
+  "name": "api-web-crawler",
   "version": "1.0.0",
+  "description": "An Electron-based web crawler for discovering and testing API endpoints",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "electron-builder --config.win.signAndEditExecutable=false",
+    "build:win": "set NODE_ENV=production && electron-builder --win --x64 --publish never --config.win.signAndEditExecutable=false"
   },
-  "keywords": [],
+  "keywords": [
+    "api",
+    "web-crawler",
+    "electron",
+    "crawler"
+  ],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
   "dependencies": {
-    "@fluentui/react": "^8.122.14",
-    "axios": "^1.8.4",
-    "cheerio": "^1.0.0",
-    "electron": "^35.1.2",
-    "electron-builder": "^26.0.12",
-    "express": "^5.1.0",
-    "form-data": "^4.0.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.12",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "electron": "^19.0.8",
+    "electron-builder": "^23.3.3"
+  },
+  "build": {
+    "appId": "com.webcrawler.app",
+    "productName": "API Web Crawler",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "API Web Crawler",
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "uninstallDisplayName": "${productName}",
+      "deleteAppDataOnUninstall": true
+    },
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "extraResources": [
+      "assets/**"
+    ],
+    "asar": true,
+    "asarUnpack": "**\\*.{node,dll}",
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ]
   }
-}
+} 
